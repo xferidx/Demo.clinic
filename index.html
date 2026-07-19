@@ -23,15 +23,6 @@
         }
     </script>
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-46PGQHDSX6"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-46PGQHDSX6');
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -60,12 +51,6 @@
         .disabled-time { opacity: 0.5; cursor: not-allowed; background-color: #e2e8f0; color: #94a3b8; border-color: #cbd5e1; }
         .hero-overlay { background: linear-gradient(to right, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.55) 40%, rgba(15, 23, 42, 0.15) 70%, rgba(15, 23, 42, 0) 100%); }
         
-        .ba-slider { position: relative; width: 100%; overflow: hidden; border-radius: 1rem; aspect-ratio: 16/9; background: #e2e8f0; }
-        .ba-slider img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .ba-after { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-        .ba-before { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; overflow: hidden; border-left: 3px solid white; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
-        .ba-before img { position: absolute; top: 0; right: 0; height: 100%; width: auto; max-width: none; }
-        .ba-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #2563eb; cursor: ew-resize; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10; }
 
         /* ===== Dark Mode ===== */
         html.dark body { background-color: #0f172a; color: #cbd5e1; }
@@ -111,7 +96,6 @@
         html.dark .border-blue-100 { border-color: #1e3a8a !important; }
         html.dark .border-indigo-400 { border-color: #818cf8 !important; }
         html.dark .disabled-time { background-color: #334155 !important; color: #64748b !important; border-color: #475569 !important; }
-        html.dark .ba-slider { background: #334155 !important; }
         /* Must come after the generic dark overrides above so the selection highlight always wins,
            even though the buttons keep their old bg-white/border-slate-* classes alongside it. */
         html.dark .selected-btn { background-color: #2563eb !important; border-color: #2563eb !important; color: white !important; }
@@ -185,29 +169,25 @@
         </section>
 
         <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-            <a href="tel:077818653825" class="bg-white hover:bg-clinic-light text-clinic shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
+            <a href="tel:07700000000" class="bg-white hover:bg-clinic-light text-clinic shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
                 <div class="bg-blue-50 p-3 rounded-full mb-1"><i class="fa-solid fa-phone-volume text-2xl"></i></div>
                 <span class="text-xs font-bold text-center">اتصال 1</span>
-                <span class="text-sm font-black" dir="ltr">077818653825</span>
+                <span class="text-sm font-black" dir="ltr">0770 000 0000</span>
             </a>
-            <a href="tel:07758939998" class="bg-white hover:bg-clinic-light text-clinic shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
+            <a href="tel:07700000001" class="bg-white hover:bg-clinic-light text-clinic shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
                 <div class="bg-blue-50 p-3 rounded-full mb-1"><i class="fa-solid fa-phone text-2xl"></i></div>
                 <span class="text-xs font-bold text-center">اتصال 2</span>
-                <span class="text-sm font-black" dir="ltr">07758939998</span>
+                <span class="text-sm font-black" dir="ltr">0770 000 0001</span>
             </a>
-            <a href="https://wa.me/9647818653825" target="_blank" class="bg-white hover:bg-green-50 text-green-600 shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
+            <a href="https://wa.me/9647700000000" target="_blank" class="bg-white hover:bg-green-50 text-green-600 shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
                 <div class="bg-green-50 p-3 rounded-full mb-1"><i class="fa-brands fa-whatsapp text-3xl"></i></div>
                 <span class="text-sm font-black text-center mt-2">واتساب</span>
             </a>
-            <a href="https://t.me/+9647818653825" target="_blank" class="bg-white hover:bg-sky-50 text-sky-500 shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
+            <a href="https://t.me/+9647700000000" target="_blank" class="bg-white hover:bg-sky-50 text-sky-500 shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
                 <div class="bg-sky-50 p-3 rounded-full mb-1"><i class="fa-brands fa-telegram text-3xl"></i></div>
                 <span class="text-sm font-black text-center mt-2">تلغرام</span>
             </a>
-            <a href="https://www.instagram.com/dr.ferid.clinic/" target="_blank" class="bg-white hover:bg-pink-50 text-pink-600 shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
-                <div class="p-3 rounded-full mb-1 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600"><i class="fa-brands fa-instagram text-3xl text-white"></i></div>
-                <span class="text-sm font-black text-center mt-2">انستغرام</span>
-            </a>
-            <a href="https://maps.app.goo.gl/PMCV9rcQGc3XPrgN9?g_st=ac" target="_blank" class="bg-white hover:bg-red-50 text-red-500 shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
+            <a href="https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D9%86%D8%B5%D9%88%D8%B1+%D8%A8%D8%BA%D8%AF%D8%A7%D8%AF" target="_blank" class="bg-white hover:bg-red-50 text-red-500 shadow-lg rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:-translate-y-1 border border-slate-100">
                 <div class="bg-red-50 p-3 rounded-full mb-1"><i class="fa-solid fa-location-dot text-3xl"></i></div>
                 <span class="text-sm font-black text-center mt-2">الموقع</span>
             </a>
@@ -305,44 +285,6 @@
             </form>
         </section>
 
-        <section class="glass-panel rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
-            <div class="text-center mb-8">
-                <span class="text-clinic font-bold text-sm bg-clinic-light px-3 py-1 rounded-full mb-2 inline-block">نتائج حقيقية</span>
-                <h2 class="text-2xl font-black text-slate-800">تغيير يصنع الفارق</h2>
-            </div>
-            <div class="max-w-2xl mx-auto">
-                <div class="ba-slider" id="ba-slider">
-                    <img class="ba-after" src="https://i.ibb.co/35QTV1qJ/Screenshot-2026-06-30-013242.png" alt="After Treatment">
-                    <div class="ba-before" id="ba-before">
-                        <img src="https://i.ibb.co/TDs3fLf0/Screenshot-2026-06-30-013224.png" alt="Before Treatment" id="ba-before-img">
-                        <div class="absolute top-4 right-4 bg-black/60 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm">قبل</div>
-                    </div>
-                    <div class="ba-handle" id="ba-handle"><i class="fa-solid fa-left-right"></i></div>
-                    <div class="absolute top-4 left-4 bg-clinic text-white text-xs font-bold px-2 py-1 rounded shadow-md z-0">بعد</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="glass-panel rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
-            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white p-3 rounded-xl shadow-lg">
-                        <i class="fa-brands fa-instagram text-2xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-black text-slate-800">يوميات العيادة</h2>
-                        <p class="text-slate-500 text-sm">حالات وتفاصيل من داخل العيادة</p>
-                    </div>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" dir="ltr">
-                <div class="w-full flex justify-center bg-slate-50 rounded-2xl overflow-hidden border border-slate-200 shadow-inner"><iframe src="https://www.instagram.com/p/DYt1yTiivbF/embed/captioned/" class="w-full h-[600px] bg-white" frameborder="0" scrolling="no" allowtransparency="true"></iframe></div>
-            <div class="w-full flex justify-center bg-slate-50 rounded-2xl overflow-hidden border border-slate-200 shadow-inner"><iframe src="https://www.instagram.com/p/DZp6rxvCZHv/embed/captioned/" class="w-full h-[600px] bg-white" frameborder="0" scrolling="no" allowtransparency="true"></iframe></div>
-            <div class="w-full flex justify-center bg-slate-50 rounded-2xl overflow-hidden border border-slate-200 shadow-inner"><iframe src="https://www.instagram.com/p/CX-niGvqme7/embed/captioned/" class="w-full h-[600px] bg-white" frameborder="0" scrolling="no" allowtransparency="true"></iframe></div>
-            <div class="w-full flex justify-center bg-slate-50 rounded-2xl overflow-hidden border border-slate-200 shadow-inner"><iframe src="https://www.instagram.com/p/CunMmVMg1ba/embed/captioned/" class="w-full h-[600px] bg-white" frameborder="0" scrolling="no" allowtransparency="true"></iframe></div>
-        </div>
-    </section>
-
     <!-- Clinic Location Section -->
     <section class="glass-panel rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
         <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
@@ -356,13 +298,13 @@
             <i class="fa-solid fa-location-dot text-clinic text-2xl mt-1"></i>
             <div>
                 <h3 class="font-bold text-lg text-slate-800 mb-1">العنوان التفصيلي</h3>
-                <p class="text-slate-600 leading-relaxed font-medium">شارع الاسكان، مجمع الرافدين، الطابق الثالث، قرب مجمع الفهد</p>
+                <p class="text-slate-600 leading-relaxed font-medium">حي المنصور، شارع 14 رمضان، بغداد</p>
             </div>
         </div>
 
         <div class="relative w-full h-72 rounded-2xl overflow-hidden border border-slate-200 shadow-inner mb-6 bg-slate-100">
             <iframe 
-                src="https://maps.google.com/maps?q=شارع+الاسكان+مجمع+الرافدين&hl=ar&z=15&output=embed" 
+                src="https://maps.google.com/maps?q=المنصور+بغداد&hl=ar&z=13&output=embed" 
                 width="100%" 
                 height="100%" 
                 style="border:0;" 
@@ -373,7 +315,7 @@
             </iframe>
         </div>
 
-        <a href="https://maps.app.goo.gl/PMCV9rcQGc3XPrgN9?g_st=ac" target="_blank" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-lg py-5 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 flex justify-center items-center gap-3">
+        <a href="https://www.google.com/maps/search/?api=1&query=%D8%A7%D9%84%D9%85%D9%86%D8%B5%D9%88%D8%B1+%D8%A8%D8%BA%D8%AF%D8%A7%D8%AF" target="_blank" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-lg py-5 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 flex justify-center items-center gap-3">
             <i class="fa-solid fa-location-arrow text-xl"></i>
             افتح المسار في تطبيق خرائط جوجل
         </a>
@@ -383,20 +325,12 @@
     <section class="text-center py-8">
         <h3 class="text-sm font-bold text-slate-400 mb-6 uppercase tracking-wider">شركاء النجاح في تقديم الرعاية</h3>
         <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-70 hover:opacity-100 transition-opacity">
-            <div class="flex items-center gap-2 font-black text-2xl text-slate-600">
-                <i class="fa-solid fa-shield-halved text-clinic"></i> BioMin
-            </div>
-            
             <a href="https://xferidx.github.io/Edelwhite/" target="_blank" class="flex flex-col items-center group transition-transform hover:scale-105">
                 <div class="text-3xl font-black tracking-tighter text-slate-800 group-hover:text-clinic transition-colors flex items-center gap-1">
                     <span class="text-red-500">+</span>edelwhite
                 </div>
                 <span class="text-[10px] tracking-widest text-slate-500 uppercase">Swiss Dental Care</span>
             </a>
-
-            <div class="flex items-center gap-2 font-black text-2xl text-slate-600">
-                <i class="fa-solid fa-tooth text-sky-500"></i> EMS
-            </div>
         </div>
     </section>
 </main>
@@ -731,7 +665,6 @@
             window.setupReasonsButtons();
             window.generateDateButtons();
             window.updateManagerBookingsView();
-            window.initBeforeAfterSlider();
             window.syncDarkModeIcon();
 
             // Restore Waiting Count Initial UI
@@ -779,33 +712,6 @@
         window.closeConfirmModal = function() {
             document.getElementById('confirm-modal').classList.add('hidden');
             document.getElementById('confirm-modal').classList.remove('flex');
-        };
-
-        window.initBeforeAfterSlider = function() {
-            const slider = document.getElementById('ba-slider');
-            const before = document.getElementById('ba-before');
-            const handle = document.getElementById('ba-handle');
-            if(!slider || !before || !handle) return;
-            let isDragging = false;
-            
-            const updateSlider = (e) => {
-                if (!isDragging) return;
-                let rect = slider.getBoundingClientRect();
-                let clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-                let x = clientX - rect.left;
-                let percentage = ((rect.right - clientX) / rect.width) * 100;
-                if (percentage < 0) percentage = 0;
-                if (percentage > 100) percentage = 100;
-                before.style.width = percentage + "%";
-                handle.style.left = (100 - percentage) + "%";
-            };
-
-            slider.addEventListener('mousedown', () => isDragging = true);
-            slider.addEventListener('touchstart', () => isDragging = true);
-            window.addEventListener('mouseup', () => isDragging = false);
-            window.addEventListener('touchend', () => isDragging = false);
-            window.addEventListener('mousemove', updateSlider);
-            window.addEventListener('touchmove', updateSlider);
         };
 
         window.setupReasonsButtons = function() {
@@ -938,7 +844,7 @@
             }
 
             const waMessage = `✨ *حجز جديد - عيادة طبيب الأسنان* ✨%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}%0A🗓 *التاريخ:* ${window.selectedDate}%0A⏰ *الوقت:* ${window.selectedTime.replace(' PM', ' م')}%0A🦷 *السبب:* ${reasonsArr.join('، ')}`;
-            window.open(`https://wa.me/9647818653825?text=${waMessage}`, '_blank');
+            window.open(`https://wa.me/9647700000000?text=${waMessage}`, '_blank');
             
             document.getElementById('booking-form').reset();
             window.selectedReasons.clear();
