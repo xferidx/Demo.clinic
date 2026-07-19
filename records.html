@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل المرضى — عيادة طبيب الأسنان (نسخة تجريبية)</title>
+
+    <script>
+        if (localStorage.getItem('clinicDarkMode') !== 'false') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        clinic: { light: '#dbeafe', DEFAULT: '#2563eb', dark: '#1e40af' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.3); }
+
+        /* ===== Dark Mode (same palette as the main site) ===== */
+        html.dark body { background-color: #0f172a; color: #cbd5e1; }
+        html.dark .glass-nav { background: rgba(15, 23, 42, 0.9) !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
+        html.dark .bg-white { background-color: #1e293b !important; }
+        html.dark .bg-slate-50 { background-color: #1e293b !important; }
+        html.dark .bg-slate-100 { background-color: #334155 !important; }
+        html.dark .bg-slate-200 { background-color: #334155 !important; }
+        html.dark .bg-slate-800 { background-color: #0b1120 !important; }
+        html.dark .bg-slate-900 { background-color: #020617 !important; }
+        html.dark .border-slate-100 { border-color: #334155 !important; }
+        html.dark .border-slate-200 { border-color: #334155 !important; }
+        html.dark .border-slate-300 { border-color: #475569 !important; }
+        html.dark .text-slate-800 { color: #e2e8f0 !important; }
+        html.dark .text-slate-700 { color: #cbd5e1 !important; }
+        html.dark .text-slate-600 { color: #94a3b8 !important; }
+        html.dark .text-slate-500 { color: #94a3b8 !important; }
+        html.dark .text-slate-400 { color: #64748b !important; }
+        html.dark .bg-red-50 { background-color: #450a0a !important; }
+        html.dark .bg-red-100 { background-color: #450a0a !important; }
+        html.dark .bg-green-50 { background-color: #052e16 !important; }
+        html.dark .bg-green-100 { background-color: #052e16 !important; }
+        html.dark .text-red-500 { color: #f87171 !important; }
+        html.dark .text-red-600 { color: #f87171 !important; }
+        html.dark .text-green-500 { color: #4ade80 !important; }
+        html.dark .text-green-600 { color: #4ade80 !important; }
+        html.dark .text-green-700 { color: #4ade80 !important; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <header class="glass-nav sticky top-0 z-40 shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center max-w-5xl">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="text-slate-400 hover:text-clinic transition-colors p-2 bg-slate-50 rounded-full hover:bg-clinic-light" title="Back to Site">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <div class="flex items-center gap-2">
+                    <div class="bg-slate-800 text-white p-2.5 rounded-xl shadow-md"><i class="fa-solid fa-folder-open text-lg"></i></div>
+                    <div>
+                        <h1 class="text-lg font-black text-slate-800">Patient Records</h1>
+                        <p class="text-[11px] text-slate-500 font-bold -mt-0.5">عيادة طبيب الأسنان — للموظفين فقط (تجريبي)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="window.toggleDarkMode()" id="dark-toggle-btn" class="text-slate-400 hover:text-clinic transition-colors p-2 bg-slate-50 rounded-full hover:bg-clinic-light" title="Dark mode">
+                    <i class="fa-solid fa-moon text-lg"></i>
+                </button>
+                <button id="records-logout-btn" onclick="window.staffLogout()" class="hidden text-xs font-bold text-slate-400 hover:text-red-500 transition-colors px-3 py-2 rounded-lg hover:bg-red-50">Log Out</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-5xl">
+
+        <!-- Login section -->
+        <div id="records-login-section" class="max-w-sm mx-auto py-16">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner"><i class="fa-solid fa-lock text-4xl text-slate-400"></i></div>
+                <h2 class="text-lg font-black text-slate-800">Staff Login</h2>
+                <p class="text-sm text-slate-500 font-bold mt-1">Sign in to access patient records</p>
+            </div>
+            <div class="space-y-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <input type="email" id="staff-login-email" autocomplete="username" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800" placeholder="اسم الموظف (اختياري)">
+                <input type="password" id="staff-login-password" autocomplete="current-password" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800" placeholder="الرمز — جرّب 1234">
+                <p id="staff-login-error" class="hidden text-red-500 text-sm font-bold text-center"></p>
+                <p class="text-center text-xs text-slate-400 font-bold">نسخة تجريبية — رمز الدخول: 1234</p>
+                <button onclick="window.staffLogin()" class="w-full bg-slate-800 text-white font-black text-lg py-4 rounded-2xl hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 shadow-lg"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login</button>
+            </div>
+        </div>
+
+        <!-- Main records content (shown once logged in) -->
+        <div id="records-main-section" class="hidden space-y-8">
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="records-search-input" oninput="window.searchPatients()" placeholder="Search by name or ID..." class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800 shadow-sm">
+                </div>
+                <button onclick="window.openAddPatientForm()" class="bg-clinic text-white font-bold px-5 py-3 rounded-xl hover:bg-clinic-dark transition-colors shadow-md whitespace-nowrap"><i class="fa-solid fa-plus mr-1"></i> Add Patient</button>
+                <button onclick="window.openEndoFollowups()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-3 rounded-xl transition-colors shadow-md whitespace-nowrap"><i class="fa-solid fa-tooth mr-1"></i> Endo Follow-Ups</button>
+            </div>
+
+            <!-- Pinned patients: manually pinned by staff so they're one tap away all day -->
+            <div id="pinned-patients-section" class="hidden">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-thumbtack text-clinic"></i>
+                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-wide">Pinned</h3>
+                </div>
+                <div id="pinned-patients-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            </div>
+
+            <!-- Recent visits: today / yesterday -->
+            <div id="recent-visits-section">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                        <p class="text-xs font-black text-slate-400 uppercase tracking-wide mb-1">Today</p>
+                        <p id="today-date-label" class="text-sm font-bold text-slate-600 mb-3"></p>
+                        <div id="today-visits-list" class="space-y-2"></div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                        <p class="text-xs font-black text-slate-400 uppercase tracking-wide mb-1">Yesterday</p>
+                        <p id="yesterday-date-label" class="text-sm font-bold text-slate-600 mb-3"></p>
+                        <div id="yesterday-visits-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search results (shown instead of recent-visits while searching) -->
+            <div id="records-list-step" class="hidden space-y-3"></div>
+
+            <!-- Endo follow-up list -->
+            <div id="endo-followup-step" class="hidden space-y-4">
+                <button onclick="window.backToPatientList()" class="text-sm font-bold text-slate-500 hover:text-clinic flex items-center gap-1"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <div>
+                    <h3 class="text-lg font-black text-slate-800">Endo Follow-Ups</h3>
+                    <p class="text-sm text-slate-500 font-bold">Instrumentation &amp; Obturation visits from the past month, oldest first</p>
+                </div>
+                <div id="endo-followup-list" class="space-y-2"></div>
+            </div>
+
+            <!-- Add patient form -->
+            <div id="records-add-step" class="hidden max-w-md mx-auto space-y-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h4 class="font-black text-slate-800 text-lg mb-2">New Patient</h4>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 mb-1 block">Full Name *</label>
+                    <input type="text" id="new-patient-name" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800" placeholder="Patient name">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 mb-1 block">Patient ID (auto-assigned)</label>
+                    <input type="text" id="new-patient-id" readonly class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-slate-100 font-bold text-slate-500 cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 mb-1 block">Phone Number</label>
+                    <input type="tel" id="new-patient-phone" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800" placeholder="07xxxxxxxxx">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="window.backToPatientList()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button onclick="window.saveNewPatient()" class="flex-1 bg-clinic text-white font-bold py-3 rounded-xl hover:bg-clinic-dark transition-colors shadow-md">Save Patient</button>
+                </div>
+            </div>
+
+            <!-- Patient detail -->
+            <div id="records-detail-step" class="hidden space-y-5">
+                <button onclick="window.backToPatientList()" class="text-sm font-bold text-slate-500 hover:text-clinic flex items-center gap-1"><i class="fa-solid fa-arrow-left"></i> Back</button>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-grow">
+                            <div class="flex items-center gap-2">
+                                <h4 id="detail-patient-name" class="text-xl font-black text-slate-800"></h4>
+                                <button onclick="window.toggleNameEdit()" class="text-xs font-bold text-clinic hover:underline flex-shrink-0">Edit</button>
+                            </div>
+                            <div id="name-edit-row" class="hidden mt-2 flex gap-2 max-w-xs">
+                                <input type="text" id="edit-name-input" class="flex-grow px-3 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800 text-sm" placeholder="Full name">
+                                <button onclick="window.savePatientName()" class="bg-clinic text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-clinic-dark transition-colors">Save</button>
+                            </div>
+
+                            <p id="detail-patient-id" class="text-sm text-slate-500 font-bold mt-1"></p>
+
+                            <div class="flex items-center gap-2 mt-1">
+                                <p id="detail-patient-phone" class="text-sm text-slate-500 font-bold"></p>
+                                <button onclick="window.togglePhoneEdit()" class="text-xs font-bold text-clinic hover:underline">Edit</button>
+                            </div>
+                            <div id="phone-edit-row" class="hidden mt-2 flex gap-2 max-w-xs">
+                                <input type="tel" id="edit-phone-input" class="flex-grow px-3 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800 text-sm" placeholder="07xxxxxxxxx">
+                                <button onclick="window.savePatientPhone()" class="bg-clinic text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-clinic-dark transition-colors">Save</button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-1 flex-shrink-0">
+                            <button id="detail-pin-btn" onclick="window.togglePin(window.currentDetailPatientId)" class="text-slate-300 hover:bg-clinic-light hover:text-clinic p-2 rounded-lg transition-colors" title="Pin patient"><i class="fa-solid fa-thumbtack"></i></button>
+                            <button onclick="window.deletePatientPrompt()" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors" title="Delete patient"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5 mt-4">
+                        <button onclick="window.sendWhatsAppReminder('تركيب')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition-colors shadow-md flex flex-col items-center justify-center gap-0.5 text-[11px]">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> تركيب
+                        </button>
+                        <button onclick="window.sendWhatsAppReminder('زراعة')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition-colors shadow-md flex flex-col items-center justify-center gap-0.5 text-[11px]">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> زراعة
+                        </button>
+                        <button onclick="window.sendWhatsAppReminder('تقويم')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition-colors shadow-md flex flex-col items-center justify-center gap-0.5 text-[11px]">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> تقويم
+                        </button>
+                        <button onclick="document.getElementById('general-photo-input').click()" class="bg-clinic hover:bg-clinic-dark text-white font-bold py-2 rounded-lg transition-colors shadow-md flex flex-col items-center justify-center gap-0.5 text-[11px]">
+                            <i class="fa-solid fa-camera text-sm"></i> Photo
+                        </button>
+                        <input type="file" id="general-photo-input" accept="image/*" multiple class="hidden" onchange="window.handleGeneralPhotoSelect(event)">
+                    </div>
+
+                    <div id="general-photos-section" class="hidden mt-4">
+                        <p class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wide">Patient Photos</p>
+                        <div id="general-photos-row" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <button onclick="window.openPatientSummary()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition-colors shadow-md flex items-center justify-center gap-2 mt-4">
+                        <i class="fa-solid fa-file-lines"></i> Patient Summary
+                    </button>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h5 class="font-black text-slate-800 flex items-center gap-2"><i class="fa-solid fa-notes-medical text-clinic"></i> Case History</h5>
+                        <button onclick="window.openAddCaseEntryForm()" class="text-sm font-bold text-clinic hover:bg-clinic-light px-3 py-1.5 rounded-lg transition-colors border border-clinic/20"><i class="fa-solid fa-plus mr-1"></i> Add Entry</button>
+                    </div>
+                    <div id="case-history-list" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="message-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[200] p-4 backdrop-blur-md">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all scale-95 opacity-0 text-center" id="message-modal-content">
+            <div id="message-icon" class="text-6xl mb-6"></div>
+            <h3 id="message-title" class="text-2xl font-black mb-3 text-slate-800"></h3>
+            <p id="message-body" class="text-slate-600 mb-8 leading-relaxed font-medium"></p>
+            <button onclick="closeMessageModal()" class="w-full bg-slate-800 text-white font-bold text-lg py-4 rounded-xl hover:bg-slate-900 transition-colors shadow-lg">OK</button>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[101] p-4 backdrop-blur-md">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+            <h3 id="confirm-title" class="text-xl font-black mb-4 text-slate-800">Confirm Action</h3>
+            <p id="confirm-body" class="text-slate-600 mb-6 font-medium"></p>
+            <div class="flex gap-3">
+                <button id="confirm-yes-btn" class="flex-1 bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700">Yes, I'm sure</button>
+                <button onclick="closeConfirmModal()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Case Entry Modal -->
+    <div id="add-entry-modal" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center z-[150] p-4 backdrop-blur-md" dir="ltr" lang="en">
+        <div class="bg-slate-50 rounded-3xl w-full max-w-2xl shadow-2xl max-h-[92vh] flex flex-col border border-slate-200">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-gradient-to-r from-slate-800 to-slate-700 rounded-t-3xl">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white/10 text-white p-3 rounded-xl"><i class="fa-solid fa-notes-medical text-xl"></i></div>
+                    <div>
+                        <h3 id="entry-modal-title" class="text-xl font-black text-white">New Case Entry</h3>
+                        <p id="entry-modal-patient-name" class="text-xs text-slate-300 font-bold mt-0.5"></p>
+                    </div>
+                </div>
+                <button onclick="window.cancelAddCaseEntry()" class="text-slate-300 hover:text-white hover:bg-white/10 transition-colors p-2 rounded-full w-10 h-10 flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-5">
+                <div>
+                    <label class="text-xs font-black text-slate-500 mb-1.5 block uppercase tracking-wide">Date</label>
+                    <input type="date" id="new-entry-date" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800 shadow-sm">
+                </div>
+
+                <div>
+                    <label class="text-xs font-black text-slate-500 mb-1.5 block uppercase tracking-wide">Procedure</label>
+                    <select id="new-entry-procedure" onchange="window.onProcedureChange()" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-bold text-slate-800 shadow-sm">
+                        <option value="">-- Select procedure --</option>
+                        <option value="Exo">Exo (Extraction)</option>
+                        <option value="Filling">Filling</option>
+                        <option value="Instrumentation">Instrumentation (Endo)</option>
+                        <option value="Obturation">Obturation (Endo)</option>
+                        <option value="S+P">S+P (Scaling &amp; Polishing)</option>
+                        <option value="Implants">Implants</option>
+                        <option value="Crown & Bridge">Crown &amp; Bridge</option>
+                        <option value="Rx">Rx (Prescription)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs font-black text-slate-500 mb-1.5 block uppercase tracking-wide">Notes</label>
+                    <textarea id="new-entry-notes" rows="1" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-clinic bg-white font-medium text-slate-800 shadow-sm leading-relaxed" placeholder="Quick note..."></textarea>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-black text-slate-500 mb-2 block uppercase tracking-wide">Permanent Teeth</label>
+                        <div class="bg-white border-2 border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                            <div class="grid grid-cols-2 divide-x divide-slate-200 border-b border-slate-200 bg-slate-50">
+                                <p class="text-center font-black text-slate-600 py-2 text-[11px] uppercase tracking-wide">Upper Right</p>
+                                <p class="text-center font-black text-slate-600 py-2 text-[11px] uppercase tracking-wide">Upper Left</p>
+                            </div>
+                            <div class="grid grid-cols-2 divide-x divide-slate-200 border-b border-slate-200">
+                                <div class="flex flex-wrap gap-1 p-2 justify-end max-w-[112px] sm:max-w-none" id="ur-teeth-row"></div>
+                                <div class="flex flex-wrap gap-1 p-2 justify-start max-w-[112px] sm:max-w-none" id="ul-teeth-row"></div>
+                            </div>
+                            <div class="grid grid-cols-2 divide-x divide-slate-200 border-b border-slate-200">
+                                <div class="flex flex-wrap gap-1 p-2 justify-end max-w-[112px] sm:max-w-none" id="lr-teeth-row"></div>
+                                <div class="flex flex-wrap gap-1 p-2 justify-start max-w-[112px] sm:max-w-none" id="ll-teeth-row"></div>
+                            </div>
+                            <div class="grid grid-cols-2 divide-x divide-slate-200 bg-slate-50">
+                                <p class="text-center font-black text-slate-600 py-2 text-[11px] uppercase tracking-wide">Lower Right</p>
+                                <p class="text-center font-black text-slate-600 py-2 text-[11px] uppercase tracking-wide">Lower Left</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="button" onclick="window.toggleDeciduousChart()" class="w-full flex justify-between items-center mb-2">
+                            <label class="text-xs font-black text-slate-500 block uppercase tracking-wide pointer-events-none">Deciduous Teeth (Baby Teeth)</label>
+                            <span id="deciduous-toggle-label" class="text-xs font-bold text-clinic flex items-center gap-1">Show <i class="fa-solid fa-chevron-down text-[10px]"></i></span>
+                        </button>
+                        <div id="deciduous-chart-wrapper" class="hidden">
+                        <div class="bg-white border-2 border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                            <div class="grid grid-cols-2 divide-x divide-slate-200 border-b border-slate-200 bg-slate-50">
+                                <p class="text-center font-black text-slate-600 py-2 text-[11px] uppercase tracking-wide">Upper Right</p>
+                                <p class="text-center font-black text-slate-600 py-2 text-[11px] uppercase tracking-wide">Upper Left</p>
+                            </div>
+                            <div class="grid grid-cols-2 divide-x divide-slate-200 border-b border-slate-200">
+                                <div class="flex flex-wrap gap-1 p-2 justify-end max-w-[112px] sm:max-w-none" id="d-ur-teeth-row"></div>
+                                <div class="flex flex-wrap gap-1 p-2 justify-start max-w-[112px] sm:max-w-none" id="d-ul-teeth-row"></div>
+                            </div>
+                            <div class="grid grid-cols-2 divide-x divide-slate-200 border-b border-slate-200">
+                                <div class="flex flex-wrap gap-1 p-2 justify-end max-w-[112px] sm:max-w-none" id="d-lr-teeth-row"></div>
+                                <div class="flex flex-wrap gap-1 p-2 justify-start max-w-[112px] sm:max-w-none" id="d-ll-teeth-row"></div>
+                            </div>
+                            <div class="grid grid-cols-2 divide-x divide-slate-200 bg-slate-50">
+                                <p class="text-center font-black text-slate-600 py-2 text-[11px] uppercase tracking-wide">Lower Right</p>
+                                <p class="text-center font-black text-slate-600 py-2 text-[11px] uppercase tracking-wide">Lower Left</p>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canal details: only shown for Instrumentation/Obturation, one card per selected tooth -->
+                <div id="canal-details-section" class="hidden">
+                    <label class="text-xs font-black text-slate-500 mb-2 block uppercase tracking-wide">Canal Details</label>
+                    <div id="canal-details-list" class="space-y-3"></div>
+                </div>
+
+                <!-- Filling materials: only shown for Filling procedure -->
+                <div id="filling-materials-section" class="hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-black text-slate-500 block uppercase tracking-wide">Filling Materials</label>
+                        <button type="button" onclick="window.openMaterialsModal()" class="text-xs font-bold text-clinic hover:underline">Manage</button>
+                    </div>
+                    <div class="bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm grid grid-cols-3 gap-2">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Bond</p>
+                            <select id="filling-bond-select" class="w-full px-2 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic bg-slate-50 font-bold text-slate-800 text-sm"></select>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Composite</p>
+                            <select id="filling-composite-select" class="w-full px-2 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic bg-slate-50 font-bold text-slate-800 text-sm"></select>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Flowable</p>
+                            <select id="filling-flowable-select" class="w-full px-2 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic bg-slate-50 font-bold text-slate-800 text-sm"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-black text-green-700 mb-1.5 block uppercase tracking-wide">Paid</label>
+                        <input type="number" id="new-entry-paid" min="0" class="w-full px-4 py-3 rounded-xl border-2 border-green-200 focus:outline-none focus:border-green-500 bg-green-50 font-black text-green-700 shadow-sm" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="text-xs font-black text-red-500 mb-1.5 block uppercase tracking-wide">Remaining</label>
+                        <input type="number" id="new-entry-remaining" min="0" class="w-full px-4 py-3 rounded-xl border-2 border-red-200 focus:outline-none focus:border-red-400 bg-red-50 font-black text-red-600 shadow-sm" placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-slate-200 flex gap-3 bg-white rounded-b-3xl">
+                <button onclick="window.cancelAddCaseEntry()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
+                <button id="save-entry-btn" onclick="window.saveCaseEntry()" class="flex-1 bg-clinic text-white font-black py-3.5 rounded-xl hover:bg-clinic-dark transition-colors shadow-lg disabled:opacity-50">Save Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Materials Management Modal -->
+    <div id="materials-modal" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center z-[160] p-4 backdrop-blur-md" dir="ltr" lang="en">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col border border-slate-200">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="text-lg font-black text-slate-800">Filling Materials</h3>
+                <button onclick="window.closeMaterialsModal()" class="text-slate-400 hover:text-white hover:bg-red-500 transition-colors p-2 bg-slate-100 rounded-full w-10 h-10 flex items-center justify-center"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <p class="text-xs text-slate-500 font-bold mb-4">The first item in each list is the default that appears automatically on a new Filling entry. Use the arrows to reorder.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div>
+                        <p class="text-xs font-black text-slate-500 uppercase mb-2">Bond</p>
+                        <div id="materials-bond-list" class="space-y-2 mb-3"></div>
+                        <div class="flex gap-1">
+                            <input type="text" id="materials-bond-new" class="flex-grow px-2 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic text-sm font-bold text-slate-800" placeholder="Add...">
+                            <button onclick="window.addMaterial('bond')" class="bg-clinic text-white px-3 rounded-lg hover:bg-clinic-dark transition-colors"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-black text-slate-500 uppercase mb-2">Composite</p>
+                        <div id="materials-composite-list" class="space-y-2 mb-3"></div>
+                        <div class="flex gap-1">
+                            <input type="text" id="materials-composite-new" class="flex-grow px-2 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic text-sm font-bold text-slate-800" placeholder="Add...">
+                            <button onclick="window.addMaterial('composite')" class="bg-clinic text-white px-3 rounded-lg hover:bg-clinic-dark transition-colors"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-black text-slate-500 uppercase mb-2">Flowable</p>
+                        <div id="materials-flowable-list" class="space-y-2 mb-3"></div>
+                        <div class="flex gap-1">
+                            <input type="text" id="materials-flowable-new" class="flex-grow px-2 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic text-sm font-bold text-slate-800" placeholder="Add...">
+                            <button onclick="window.addMaterial('flowable')" class="bg-clinic text-white px-3 rounded-lg hover:bg-clinic-dark transition-colors"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-slate-200">
+                <button onclick="window.saveMaterials()" class="w-full bg-clinic text-white font-black py-3.5 rounded-xl hover:bg-clinic-dark transition-colors shadow-lg">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="seed-demo-data.js"></script>
+    <script type="module">
+        import {
+            initializeApp, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+            getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, serverTimestamp,
+            getStorage, ref, uploadBytes, getDownloadURL, deleteObject
+        } from "./firebase-mock.js";
+
+        const appId = 'dental-clinic-trial'; // any fixed string you like, just keep it consistent
+
+        // Trial build: no real Firebase project — firebase-mock.js handles everything locally.
+        const firebaseConfig = { apiKey: "TRIAL-MODE" };
+
+        let app, auth, db, storage;
+        try {
+            if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "PASTE_YOUR_API_KEY_HERE") {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                storage = getStorage(app);
+            } else {
+                console.warn("Firebase not configured yet — running in local-only mode. See setup instructions.");
+            }
+        } catch(e) {
+            console.error("Firebase Init Error:", e);
+        }
+
+        // State Management
+
+        window.allPatients = [];
+        window.currentDetailPatientId = null;
+
+        // Safety net: if anything unexpected throws anywhere on this page, show it instead of
+        // leaving buttons that silently appear to do nothing.
+        window.addEventListener('error', (e) => {
+            console.error('Page error:', e.message);
+            const errorEl = document.getElementById('staff-login-error');
+            if (errorEl && document.getElementById('records-login-section') && !document.getElementById('records-login-section').classList.contains('hidden')) {
+                errorEl.textContent = 'Something went wrong: ' + e.message;
+                errorEl.classList.remove('hidden');
+            }
+        });
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled rejection:', e.reason);
+        });
+
+        window.syncDarkModeIcon = function() {
+            const icon = document.querySelector('#dark-toggle-btn i');
+            if (!icon) return;
+            const isDark = document.documentElement.classList.contains('dark');
+            icon.classList.toggle('fa-moon', !isDark);
+            icon.classList.toggle('fa-sun', isDark);
+        };
+
+        window.toggleDarkMode = function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('clinicDarkMode', isDark);
+            window.syncDarkModeIcon();
+        };
+
+
+        window.showConfirm = function(title, message, onYes) {
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-body').innerText = message;
+            const btnYes = document.getElementById('confirm-yes-btn');
+            
+            // Remove old listeners by cloning
+            const newBtnYes = btnYes.cloneNode(true);
+            btnYes.parentNode.replaceChild(newBtnYes, btnYes);
+            
+            newBtnYes.addEventListener('click', () => { 
+                onYes(); 
+                window.closeConfirmModal(); 
+            });
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.closeConfirmModal = function() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            document.getElementById('confirm-modal').classList.remove('flex');
+        };
+
+
+        window.showMessage = function(title, body, type) {
+            const modal = document.getElementById('message-modal');
+            document.getElementById('message-title').innerText = title;
+            document.getElementById('message-body').innerText = body;
+            document.getElementById('message-icon').innerHTML = type === 'success' ? '<div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-500"><i class="fa-solid fa-check text-5xl"></i></div>' : '<div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500"><i class="fa-solid fa-xmark text-5xl"></i></div>';
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => {
+                const content = document.getElementById('message-modal-content');
+                content.classList.replace('scale-95', 'scale-100');
+                content.classList.remove('opacity-0');
+            }, 10);
+        };
+
+        window.closeMessageModal = function() {
+            document.getElementById('message-modal').classList.add('hidden');
+            document.getElementById('message-modal').classList.remove('flex');
+            const content = document.getElementById('message-modal-content');
+            content.classList.add('opacity-0');
+            content.classList.replace('scale-100', 'scale-95');
+        };
+
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+
+
+        // This page is staff-only: no anonymous fallback like the main site.
+        function initRecordsAuth() {
+            if (!auth) return;
+            onAuthStateChanged(auth, (user) => {
+                if (user && !user.isAnonymous) {
+                    document.getElementById('records-login-section').classList.add('hidden');
+                    document.getElementById('records-main-section').classList.remove('hidden');
+                    document.getElementById('records-logout-btn').classList.remove('hidden');
+                    startRecordsListener();
+                    renderToothChart();
+                } else {
+                    document.getElementById('records-login-section').classList.remove('hidden');
+                    document.getElementById('records-main-section').classList.add('hidden');
+                    document.getElementById('records-logout-btn').classList.add('hidden');
+                    window.currentDetailPatientId = null;
+                }
+            });
+        }
+
+        const DEFAULT_MATERIALS = {
+            bond: ['Premio'],
+            composite: ['Toko', 'LS II'],
+            flowable: ['GC Flo']
+        };
+        window.fillingMaterials = DEFAULT_MATERIALS;
+
+        function startRecordsListener() {
+            const recordsCol = collection(db, 'artifacts', appId, 'public', 'data', 'patient_records');
+            onSnapshot(recordsCol, (snapshot) => {
+                window.allPatients = [];
+                snapshot.forEach(docSnap => {
+                    window.allPatients.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                if (document.getElementById('records-list-step').classList.contains('hidden')) {
+                    renderRecentVisits();
+                } else {
+                    window.searchPatients();
+                }
+                if (window.currentDetailPatientId) window.refreshDetailView();
+            }, (error) => {
+                console.error("Patient Records Sync Error:", error);
+                if (error.code === 'permission-denied') {
+                    document.getElementById('recent-visits-section').innerHTML = `<div class="text-center py-10"><p class="text-red-500 font-bold mb-2">Access denied — you're not logged in as staff.</p><p class="text-slate-400 text-sm">Log out and log back in.</p></div>`;
+                }
+            });
+
+            const materialsRef = doc(db, 'artifacts', appId, 'public', 'data', 'clinic_state', 'filling_materials');
+            onSnapshot(materialsRef, (snap) => {
+                window.fillingMaterials = snap.exists() ? snap.data() : DEFAULT_MATERIALS;
+                if (!document.getElementById('filling-materials-section').classList.contains('hidden')) {
+                    window.renderFillingMaterialsFields();
+                }
+                if (!document.getElementById('materials-modal').classList.contains('hidden')) {
+                    window.materialsDraft = JSON.parse(JSON.stringify(window.fillingMaterials));
+                    renderMaterialsModalLists();
+                }
+            }, (error) => console.error('Materials Sync Error:', error));
+        }
+
+        window.syncDarkModeIcon = window.syncDarkModeIcon || function() {};
+        window.syncDarkModeIcon();
+        initRecordsAuth();
+
+        window.staffLogin = async function() {
+            const email = document.getElementById('staff-login-email').value.trim();
+            const password = document.getElementById('staff-login-password').value;
+            const errorEl = document.getElementById('staff-login-error');
+            errorEl.classList.add('hidden');
+            if (!password) {
+                errorEl.textContent = 'الرجاء إدخال الرمز.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            if (!auth) {
+                errorEl.textContent = 'Connection error — could not reach Firebase. Check your internet connection and reload the page.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                console.log('Login succeeded, user:', auth.currentUser);
+                errorEl.textContent = 'Login successful — loading records...';
+                errorEl.classList.remove('hidden', 'text-red-500');
+                errorEl.classList.add('text-green-600');
+                // onAuthStateChanged handles showing the main section
+            } catch (e) {
+                console.error(e);
+                errorEl.textContent = 'Incorrect email or password.';
+                errorEl.classList.remove('hidden');
+            }
+        };
+
+        window.staffLogout = async function() {
+            if (!auth) return;
+            try {
+                window.currentDetailPatientId = null;
+                await signOut(auth);
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        // Recent-visits dashboard: today / yesterday / 2 days ago, based on case entry dates
+        function isoDateOffset(daysAgo) {
+            const d = new Date();
+            d.setDate(d.getDate() - daysAgo);
+            return d.toISOString().split('T')[0];
+        }
+
+        function friendlyDateLabel(iso) {
+            const d = new Date(iso + 'T00:00:00');
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function renderRecentVisits() {
+            document.getElementById('pinned-patients-section').classList.remove('hidden');
+            document.getElementById('recent-visits-section').classList.remove('hidden');
+            document.getElementById('records-list-step').classList.add('hidden');
+
+            renderPinnedPatients();
+
+            const todayIso = isoDateOffset(0);
+            const yestIso = isoDateOffset(1);
+
+            document.getElementById('today-date-label').textContent = friendlyDateLabel(todayIso);
+            document.getElementById('yesterday-date-label').textContent = friendlyDateLabel(yestIso);
+
+            const buckets = { [todayIso]: [], [yestIso]: [] };
+            window.allPatients.forEach(p => {
+                const seenDates = new Set();
+                (p.caseHistory || []).forEach(e => {
+                    if (buckets[e.date] && !seenDates.has(e.date)) {
+                        buckets[e.date].push(p);
+                        seenDates.add(e.date);
+                    }
+                });
+            });
+
+            function renderCol(containerId, list) {
+                const el = document.getElementById(containerId);
+                if (list.length === 0) {
+                    el.innerHTML = `<p class="text-xs text-slate-400 font-bold">No visits.</p>`;
+                    return;
+                }
+                el.innerHTML = list.map(p => `
+                    <button onclick="window.openPatientDetail('${p.id}')" class="w-full text-left bg-slate-50 hover:bg-clinic-light border border-slate-200 rounded-lg px-3 py-2 transition-colors">
+                        <p class="font-bold text-slate-800 text-sm">${escapeHtml(p.name)}</p>
+                        <p class="text-[11px] text-slate-500 font-bold">${p.patientId ? 'ID: ' + escapeHtml(p.patientId) : ''}</p>
+                    </button>`).join('');
+            }
+
+            renderCol('today-visits-list', buckets[todayIso]);
+            renderCol('yesterday-visits-list', buckets[yestIso]);
+        }
+
+        // Pinned patients: manually toggled by staff, not date-based — stay pinned until someone
+        // unpins them, so a patient stays one tap away all day without needing to search.
+        function renderPinnedPatients() {
+            const section = document.getElementById('pinned-patients-section');
+            const container = document.getElementById('pinned-patients-list');
+            const pinned = window.allPatients.filter(p => p.pinned);
+            if (pinned.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+            container.innerHTML = pinned.map(p => `
+                <div class="bg-clinic-light border-2 border-clinic/30 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2">
+                    <button onclick="window.openPatientDetail('${p.id}')" class="text-left flex-grow min-w-0">
+                        <p class="font-black text-slate-800 text-sm truncate">${escapeHtml(p.name)}</p>
+                        <p class="text-[11px] text-slate-500 font-bold">${p.patientId ? 'ID: ' + escapeHtml(p.patientId) : ''}</p>
+                    </button>
+                    <button onclick="window.togglePin('${p.id}')" class="text-clinic hover:text-red-500 flex-shrink-0 p-1" title="Unpin"><i class="fa-solid fa-thumbtack"></i></button>
+                </div>
+            `).join('');
+        }
+
+        window.togglePin = async function(patientId) {
+            const p = window.allPatients.find(x => x.id === patientId);
+            if (!p || !db) return;
+            try {
+                const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                await setDoc(patientRef, { pinned: !p.pinned, updatedAt: serverTimestamp() }, { merge: true });
+            } catch (e) {
+                console.error(e);
+                window.showMessage('Failed', 'Could not update pin. Please try again.', 'error');
+            }
+        };
+
+        window.searchPatients = function() {
+            const raw = (document.getElementById('records-search-input').value || '').trim();
+            const term = raw.toLowerCase();
+
+            if (!term) {
+                renderRecentVisits();
+                return;
+            }
+
+            document.getElementById('pinned-patients-section').classList.add('hidden');
+            document.getElementById('recent-visits-section').classList.add('hidden');
+            document.getElementById('records-list-step').classList.remove('hidden');
+
+            let list;
+            if (/^\d+$/.test(raw)) {
+                const targetNum = parseInt(raw, 10);
+                list = window.allPatients.filter(p => parseInt(p.patientId, 10) === targetNum);
+            } else {
+                list = window.allPatients.filter(p =>
+                    (p.name || '').toLowerCase().includes(term) || (p.patientId || '').toLowerCase().includes(term)
+                );
+            }
+            renderPatientList(list);
+        };
+
+        function renderPatientList(list) {
+            const container = document.getElementById('records-list-step');
+            if (!list || list.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-400 font-bold py-10">No patients found.</p>`;
+                return;
+            }
+            const sorted = [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            container.innerHTML = sorted.map(p => `
+                <div class="w-full bg-white border border-slate-200 rounded-xl p-4 flex justify-between items-center hover:border-clinic transition-colors shadow-sm gap-2">
+                    <button onclick="window.openPatientDetail('${p.id}')" class="text-left flex-grow min-w-0">
+                        <p class="font-black text-slate-800">${escapeHtml(p.name)}</p>
+                        <p class="text-xs text-slate-500 font-bold mt-0.5">${p.patientId ? 'ID: ' + escapeHtml(p.patientId) : 'No ID'} ${p.phone ? ' · ' + escapeHtml(p.phone) : ''}</p>
+                    </button>
+                    <button onclick="window.togglePin('${p.id}')" class="flex-shrink-0 p-2 ${p.pinned ? 'text-clinic' : 'text-slate-300 hover:text-clinic'}" title="${p.pinned ? 'Unpin' : 'Pin'}"><i class="fa-solid fa-thumbtack"></i></button>
+                </div>
+            `).join('');
+        }
+
+        window.backToPatientList = function() {
+            window.currentDetailPatientId = null;
+            document.getElementById('records-add-step').classList.add('hidden');
+            document.getElementById('records-detail-step').classList.add('hidden');
+            document.getElementById('records-search-input').value = '';
+            renderRecentVisits();
+        };
+
+        function getNextPatientId() {
+            let maxId = 0;
+            window.allPatients.forEach(p => {
+                const n = parseInt(p.patientId, 10);
+                if (!isNaN(n) && n > maxId) maxId = n;
+            });
+            return String(maxId + 1);
+        }
+
+        // Shows the add-patient form or patient-detail view, hiding the recent-visits/search list beneath it.
+        function recordsShowStep(stepId) {
+            document.getElementById('pinned-patients-section').classList.add('hidden');
+            document.getElementById('recent-visits-section').classList.add('hidden');
+            document.getElementById('records-list-step').classList.add('hidden');
+            document.getElementById('records-add-step').classList.add('hidden');
+            document.getElementById('records-detail-step').classList.add('hidden');
+            document.getElementById('endo-followup-step').classList.add('hidden');
+            document.getElementById(stepId).classList.remove('hidden');
+        }
+
+
+        window.openAddPatientForm = function() {
+            document.getElementById('new-patient-name').value = '';
+            document.getElementById('new-patient-id').value = getNextPatientId();
+            document.getElementById('new-patient-phone').value = '';
+            recordsShowStep('records-add-step');
+        };
+
+                window.saveNewPatient = async function() {
+            const name = document.getElementById('new-patient-name').value.trim();
+            const patientId = document.getElementById('new-patient-id').value.trim();
+            const phone = document.getElementById('new-patient-phone').value.trim();
+            if (!name) {
+                window.showMessage('Missing Name', 'Please enter the patient\'s full name.', 'error');
+                return;
+            }
+            if (!auth?.currentUser || !db) {
+                window.showMessage('Not Connected', 'Please check your internet connection.', 'error');
+                return;
+            }
+
+            const duplicates = window.allPatients.filter(p => (p.name || '').trim().toLowerCase() === name.toLowerCase());
+            if (duplicates.length > 0) {
+                const existingList = duplicates.map(p => `#${p.patientId || '?'}${p.phone ? ' (' + p.phone + ')' : ''}`).join(', ');
+                window.showConfirm(
+                    'Possible Duplicate',
+                    `A patient named "${name}" already exists: ${existingList}. Add another patient with the same name anyway?`,
+                    () => actuallySaveNewPatient(name, patientId, phone)
+                );
+                return;
+            }
+
+            actuallySaveNewPatient(name, patientId, phone);
+        };
+
+        async function actuallySaveNewPatient(name, patientId, phone) {
+            try {
+                const newRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'patient_records'));
+                await setDoc(newRef, {
+                    name, patientId, phone,
+                    caseHistory: [],
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+                window.showMessage('Patient Added', name + ' was saved as patient #' + patientId + '.', 'success');
+                window.backToPatientList();
+            } catch (e) {
+                console.error(e);
+                window.showMessage('Save Failed', 'Could not save the patient. Please try again.', 'error');
+            }
+        };
+
+
+        window.openPatientDetail = function(patientId) {
+            window.currentDetailPatientId = patientId;
+            recordsShowStep('records-detail-step');
+            window.refreshDetailView();
+        };
+
+        window.refreshDetailView = function() {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p) return; // patient may have just been deleted from another device
+            document.getElementById('detail-patient-name').textContent = p.name || '';
+            document.getElementById('detail-patient-id').textContent = p.patientId ? 'ID: ' + p.patientId : 'No ID assigned';
+            document.getElementById('detail-patient-phone').textContent = p.phone ? 'Phone: ' + p.phone : 'No phone on file';
+
+            const pinBtn = document.getElementById('detail-pin-btn');
+            if (p.pinned) {
+                pinBtn.classList.add('bg-clinic-light', 'text-clinic');
+                pinBtn.classList.remove('text-slate-300');
+                pinBtn.title = 'Unpin patient';
+            } else {
+                pinBtn.classList.remove('bg-clinic-light', 'text-clinic');
+                pinBtn.classList.add('text-slate-300');
+                pinBtn.title = 'Pin patient';
+            }
+
+            const generalSection = document.getElementById('general-photos-section');
+            const generalRow = document.getElementById('general-photos-row');
+            const generalPhotos = p.generalPhotos || [];
+            if (generalPhotos.length > 0) {
+                generalSection.classList.remove('hidden');
+                generalRow.innerHTML = generalPhotos.map((ph, i) => `
+                    <div class="relative w-16 h-16">
+                        <a href="${ph.url}" target="_blank"><img src="${ph.url}" class="w-16 h-16 object-cover rounded-lg border border-slate-200"></a>
+                        <button onclick="window.deleteGeneralPhoto(${i})" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] shadow-md"><i class="fa-solid fa-xmark"></i></button>
+                    </div>`).join('');
+            } else {
+                generalSection.classList.add('hidden');
+            }
+
+            const entries = [...(p.caseHistory || [])].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            const historyContainer = document.getElementById('case-history-list');
+            if (entries.length === 0) {
+                historyContainer.innerHTML = `<p class="text-center text-slate-400 font-bold py-6">No case history yet.</p>`;
+                return;
+            }
+            historyContainer.innerHTML = entries.map(entry => `
+                <div class="flex gap-4 border border-slate-200 rounded-xl p-4 bg-slate-50">
+                    <div class="text-left flex-shrink-0 w-24">
+                        <p class="font-black text-slate-800 text-sm">${escapeHtml(entry.date || '')}</p>
+                    </div>
+                    <div class="flex-grow border-l border-slate-200 pl-4">
+                        <p class="text-slate-700 text-sm whitespace-pre-wrap">${escapeHtml(entry.notes || '')}</p>
+                        ${entry.teeth && entry.teeth.length ? `<p class="text-xs font-bold text-slate-500 mt-2">Teeth: ${entry.teeth.join(', ')}${entry.procedure ? ' · ' + escapeHtml(entry.procedure) : ''}</p>` : (entry.procedure ? `<p class="text-xs font-bold text-slate-500 mt-2">${escapeHtml(entry.procedure)}</p>` : '')}
+                        <div class="flex gap-2 mt-3">
+                            <span class="bg-green-100 text-green-700 font-black text-sm px-3 py-1.5 rounded-lg">${Number(entry.paid || 0).toLocaleString()}</span>
+                            ${(entry.remaining && entry.remaining > 0) ? `<span class="bg-red-100 text-red-600 font-black text-sm px-3 py-1.5 rounded-lg">${Number(entry.remaining).toLocaleString()}</span>` : ''}
+                        </div>
+                        ${entry.photos && entry.photos.length ? `<div class="flex flex-wrap gap-2 mt-3">${entry.photos.map(ph => `<a href="${ph.url}" target="_blank"><img src="${ph.url}" class="w-14 h-14 object-cover rounded-lg border border-slate-200 hover:opacity-80 transition-opacity"></a>`).join('')}</div>` : ''}
+                    </div>
+                    <div class="flex flex-col gap-2 flex-shrink-0">
+                        <button onclick="window.openAddCaseEntryForm('${entry.id}')" class="text-slate-300 hover:text-clinic transition-colors" title="Edit entry"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="window.deleteCaseEntry('${entry.id}')" class="text-slate-300 hover:text-red-500 transition-colors" title="Delete entry"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        // Palmer notation: each quadrant grouped visually (Upper/Lower Right/Left boxes) rather than
+        // with the traditional bracket symbols, which render inconsistently across devices.
+
+        window.selectedTeeth = new Set();
+
+        function toothButtonHtml(id, label, mobileOrder, desktopOrder) {
+            return `<button type="button" onclick="window.toggleTooth('${id}')" data-tooth="${id}" class="tooth-btn order-${mobileOrder} sm:order-${desktopOrder} w-8 h-8 flex-shrink-0 rounded-md border-2 border-slate-200 bg-white text-slate-700 text-xs font-bold hover:border-clinic transition-colors flex items-center justify-center">${label}</button>`;
+        }
+
+        // One button per tooth (no duplicated elements — that caused real selection bugs before).
+        // The container wraps at 3-per-row on narrow screens via a max-width, and each button
+        // carries a CSS `order` that's different for mobile vs desktop, so the same buttons can
+        // read correctly in both a grouped 3/3/2 layout and a single full-width row.
+        // `outwardIds`/`outwardLabels` must be in molars→incisors order (8..1 or E..A) for every
+        // quadrant; `mirror` (true for UL/LL) flips both layouts for the mirror-image side.
+        function renderQuadrantRows(containerId, outwardIds, outwardLabels, mirror) {
+            const n = outwardIds.length;
+
+            const desktopOrder = new Array(n);
+            for (let i = 0; i < n; i++) desktopOrder[i] = mirror ? (n - i) : (i + 1);
+
+            const chunks = [];
+            let idx = 0;
+            while (idx < n) {
+                const size = (n - idx > 3) ? 3 : (n - idx);
+                let chunkIdx = [];
+                for (let k = 0; k < size; k++) chunkIdx.push(idx + k);
+                if (mirror) chunkIdx.reverse();
+                chunks.push(chunkIdx);
+                idx += size;
+            }
+            const visualSeq = chunks.flat();
+            const mobileOrder = new Array(n);
+            visualSeq.forEach((origIdx, pos) => { mobileOrder[origIdx] = pos + 1; });
+
+            const html = outwardIds.map((id, i) => toothButtonHtml(id, outwardLabels[i], mobileOrder[i], desktopOrder[i])).join('');
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        function renderToothChart() {
+            renderQuadrantRows('ur-teeth-row', [8,7,6,5,4,3,2,1].map(n => 'UR' + n), [8,7,6,5,4,3,2,1], false);
+            renderQuadrantRows('ul-teeth-row', [8,7,6,5,4,3,2,1].map(n => 'UL' + n), [8,7,6,5,4,3,2,1], true);
+            renderQuadrantRows('lr-teeth-row', [8,7,6,5,4,3,2,1].map(n => 'LR' + n), [8,7,6,5,4,3,2,1], false);
+            renderQuadrantRows('ll-teeth-row', [8,7,6,5,4,3,2,1].map(n => 'LL' + n), [8,7,6,5,4,3,2,1], true);
+
+            // Deciduous (baby) teeth: lettered A (closest to midline) through E (outermost), 5 per quadrant.
+            renderQuadrantRows('d-ur-teeth-row', ['E','D','C','B','A'].map(l => 'UR' + l), ['E','D','C','B','A'], false);
+            renderQuadrantRows('d-ul-teeth-row', ['E','D','C','B','A'].map(l => 'UL' + l), ['E','D','C','B','A'], true);
+            renderQuadrantRows('d-lr-teeth-row', ['E','D','C','B','A'].map(l => 'LR' + l), ['E','D','C','B','A'], false);
+            renderQuadrantRows('d-ll-teeth-row', ['E','D','C','B','A'].map(l => 'LL' + l), ['E','D','C','B','A'], true);
+        }
+
+        // Deciduous chart is hidden by default (rarely needed) to keep the entry page compact —
+        // one tap reveals it when treating a baby tooth.
+        window.toggleDeciduousChart = function() {
+            const wrapper = document.getElementById('deciduous-chart-wrapper');
+            const label = document.getElementById('deciduous-toggle-label');
+            const isHidden = wrapper.classList.contains('hidden');
+            wrapper.classList.toggle('hidden');
+            label.innerHTML = isHidden
+                ? 'Hide <i class="fa-solid fa-chevron-up text-[10px]"></i>'
+                : 'Show <i class="fa-solid fa-chevron-down text-[10px]"></i>';
+        };
+
+        window.toggleTooth = function(id) {
+            const btns = document.querySelectorAll(`.tooth-btn[data-tooth="${id}"]`);
+            if (window.selectedTeeth.has(id)) {
+                window.selectedTeeth.delete(id);
+                btns.forEach(btn => {
+                    btn.classList.remove('bg-clinic', 'border-clinic', 'text-white');
+                    btn.classList.add('bg-white', 'border-slate-200', 'text-slate-700');
+                });
+            } else {
+                window.selectedTeeth.add(id);
+                btns.forEach(btn => {
+                    btn.classList.add('bg-clinic', 'border-clinic', 'text-white');
+                    btn.classList.remove('bg-white', 'border-slate-200', 'text-slate-700');
+                });
+            }
+            window.renderCanalDetails();
+        };
+
+        // Standard canal counts by tooth type — a practical starting template, not a diagnostic
+        // rule. Incisors/canines: 1 canal. Premolars: 2 upper / 1 lower (typical). Molars: 4 upper
+        // (MB1, MB2, DB, P) / 3 lower (MB, ML, D). Real anatomy varies case to case — adjust the
+        // WL/File values freely; this just saves retyping the canal names every time.
+        function getCanalsForTooth(toothId) {
+            const quadrant = toothId.slice(0, 2);
+            const num = parseInt(toothId.slice(2), 10);
+            const isUpper = quadrant === 'UR' || quadrant === 'UL';
+            if (num >= 1 && num <= 3) return ['Canal'];
+            if (num === 4 || num === 5) return isUpper ? ['B', 'P'] : ['Canal'];
+            // Teeth 6/7 sometimes have an extra canal (a 2nd mesiobuccal upper, a 2nd distal lower)
+            // that isn't always present — left blank by default rather than assumed.
+            if (num === 6 || num === 7) return isUpper ? ['MB1', 'MB2', 'DB', 'P'] : ['MB', 'ML', 'D', 'D2'];
+            if (num === 8) return isUpper ? ['MB1', 'MB2', 'DB', 'P'] : ['MB', 'ML', 'D'];
+            return ['Canal'];
+        }
+
+        function toothLabel(toothId) {
+            const quadrant = toothId.slice(0, 2);
+            const num = toothId.slice(2);
+            const names = { UR: 'Upper Right', UL: 'Upper Left', LR: 'Lower Right', LL: 'Lower Left' };
+            return `${names[quadrant]} ${num}`;
+        }
+
+        function sortedSelectedTeeth() {
+            const quadrantOrder = { UR: 0, UL: 1, LR: 2, LL: 3 };
+            return Array.from(window.selectedTeeth).sort((a, b) => {
+                const qa = a.slice(0, 2), qb = b.slice(0, 2);
+                if (qa !== qb) return quadrantOrder[qa] - quadrantOrder[qb];
+                return parseInt(a.slice(2), 10) - parseInt(b.slice(2), 10);
+            });
+        }
+
+        // MB2 (2nd mesiobuccal, upper) and D2 (2nd distal, lower) aren't always present anatomically
+        // — they start blank rather than pre-filled, and stay out of the notes entirely if left blank.
+        function isOptionalCanal(canalName) {
+            return canalName === 'MB2' || canalName === 'D2';
+        }
+
+        // Buccal canals (MB1, MB2, MB, DB) default to F2 during Obturation; palatal/distal
+        // canals (P, D, ML) default to F3 — the two most common finishing sizes in practice.
+        function isBuccalCanal(canalName) {
+            return canalName.includes('B');
+        }
+
+        function defaultFileFor(procedure, canalName) {
+            if (isOptionalCanal(canalName)) return '';
+            if (procedure === 'Instrumentation') return 'S1';
+            if (procedure === 'Obturation') return isBuccalCanal(canalName) ? 'F2' : 'F3';
+            return '';
+        }
+
+        window.adjustWL = function(toothId, canal, delta) {
+            const card = document.querySelector(`#canal-details-list [data-canal-tooth="${toothId}"]`);
+            if (!card) return;
+            const input = card.querySelector(`.canal-input[data-canal="${canal}"][data-field="wl"]`);
+            if (!input) return;
+            let val = parseFloat(input.value);
+            if (isNaN(val)) val = 21;
+            val = Math.round((val + delta) * 10) / 10;
+            if (val < 0) val = 0;
+            input.value = val;
+        };
+
+        // Renders one card per selected tooth with WL/File boxes per canal, only when the
+        // procedure is Instrumentation or Obturation. Preserves already-typed values when teeth
+        // are added/removed rather than wiping the whole section on every toggle.
+        window.renderCanalDetails = function() {
+            const procedure = document.getElementById('new-entry-procedure').value;
+            const section = document.getElementById('canal-details-section');
+            const list = document.getElementById('canal-details-list');
+            const isEndoPhase = procedure === 'Instrumentation' || procedure === 'Obturation';
+
+            if (!isEndoPhase || window.selectedTeeth.size === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+
+            const fileOptions = procedure === 'Instrumentation'
+                ? ['S1', 'S2', 'F1', 'F2', 'F3', 'F4', 'F5']
+                : ['F1', 'F2', 'F3', 'F4', 'F5'];
+            const selectedSorted = sortedSelectedTeeth();
+
+            list.querySelectorAll('[data-canal-tooth]').forEach(card => {
+                if (!window.selectedTeeth.has(card.getAttribute('data-canal-tooth'))) card.remove();
+            });
+
+            selectedSorted.forEach(toothId => {
+                if (list.querySelector(`[data-canal-tooth="${toothId}"]`)) return; // keep existing values
+                const canals = getCanalsForTooth(toothId);
+                const card = document.createElement('div');
+                card.setAttribute('data-canal-tooth', toothId);
+                card.className = 'bg-white border-2 border-slate-200 rounded-xl p-4 shadow-sm';
+                card.innerHTML = `
+                    <p class="font-black text-slate-800 text-sm mb-3">${toothLabel(toothId)} (${toothId})</p>
+                    <div class="space-y-3">
+                        ${canals.map(canal => {
+                            const optional = isOptionalCanal(canal);
+                            const defaultVal = defaultFileFor(procedure, canal);
+                            const blankOption = optional ? `<option value="" ${defaultVal === '' ? 'selected' : ''}>Not Present</option>` : '';
+                            const optionsHtml = blankOption + fileOptions.map(opt => `<option value="${opt}" ${opt === defaultVal ? 'selected' : ''}>${opt}</option>`).join('') + `<option value="__custom__">Custom...</option>`;
+                            return `
+                            <div class="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                                <p class="text-xs font-bold text-slate-500 mb-1.5">${canal}${optional ? ' <span class="text-slate-400 font-normal">(if present)</span>' : ''}</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" onclick="window.adjustWL('${toothId}','${canal}',-0.5)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-black flex-shrink-0 flex items-center justify-center">−</button>
+                                        <input type="number" step="0.5" value="${optional ? '' : '21'}" data-canal="${canal}" data-field="wl" onfocus="this.select()" class="canal-input w-full px-1 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic bg-slate-50 font-bold text-slate-800 text-sm text-center" placeholder="${optional ? '—' : ''}">
+                                        <button type="button" onclick="window.adjustWL('${toothId}','${canal}',0.5)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-black flex-shrink-0 flex items-center justify-center">+</button>
+                                    </div>
+                                    <div class="relative">
+                                        <select data-canal="${canal}" data-field="file" onchange="window.handleFileDropdownChange(this)" class="canal-input w-full px-2 py-2 rounded-lg border-2 border-slate-200 focus:outline-none focus:border-clinic bg-slate-50 font-bold text-slate-800 text-sm">
+                                            ${optionsHtml}
+                                        </select>
+                                        <input type="text" data-canal="${canal}" data-field="file-custom" onblur="window.syncCustomFile(this)" class="canal-input hidden w-full px-2 py-2 rounded-lg border-2 border-clinic focus:outline-none bg-white font-bold text-slate-800 text-sm" placeholder="Type file size">
+                                    </div>
+                                </div>
+                            </div>
+                        `;}).join('')}
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+
+            // Keep card order matching quadrant/tooth order regardless of toggle order
+            selectedSorted.forEach(toothId => {
+                const card = list.querySelector(`[data-canal-tooth="${toothId}"]`);
+                if (card) list.appendChild(card);
+            });
+        };
+
+        // Switches a canal's File control from the dropdown to a free-text box when "Custom..."
+        // is picked, so any file size/name can be typed in, not just the listed ones.
+        window.handleFileDropdownChange = function(select) {
+            if (select.value !== '__custom__') return;
+            const wrapper = select.parentElement;
+            const customInput = wrapper.querySelector('[data-field="file-custom"]');
+            select.classList.add('hidden');
+            customInput.classList.remove('hidden');
+            customInput.value = '';
+            customInput.focus();
+        };
+
+        // If the custom box is left empty, quietly revert to the dropdown instead of leaving a
+        // blank field behind.
+        window.syncCustomFile = function(input) {
+            if (input.value.trim()) return;
+            const wrapper = input.parentElement;
+            const select = wrapper.querySelector('select');
+            input.classList.add('hidden');
+            select.classList.remove('hidden');
+            select.selectedIndex = 0;
+        };
+
+        function collectCanalDetails() {
+            const details = {};
+            document.querySelectorAll('#canal-details-list [data-canal-tooth]').forEach(card => {
+                const toothId = card.getAttribute('data-canal-tooth');
+                const canalData = {};
+                const canalNames = new Set();
+                card.querySelectorAll('[data-canal]').forEach(el => canalNames.add(el.getAttribute('data-canal')));
+                canalNames.forEach(canal => {
+                    const wl = card.querySelector(`[data-canal="${canal}"][data-field="wl"]`).value;
+                    const fileSelect = card.querySelector(`select[data-canal="${canal}"][data-field="file"]`);
+                    const fileCustom = card.querySelector(`input[data-canal="${canal}"][data-field="file-custom"]`);
+                    const file = (fileSelect.value === '__custom__' || fileSelect.classList.contains('hidden')) ? fileCustom.value : fileSelect.value;
+                    if (wl || file) canalData[canal] = { wl, file };
+                });
+                if (Object.keys(canalData).length > 0) details[toothId] = canalData;
+            });
+            return details;
+        }
+
+        function populateCanalDetails(canalDetails) {
+            if (!canalDetails) return;
+            Object.entries(canalDetails).forEach(([toothId, canals]) => {
+                const card = document.querySelector(`#canal-details-list [data-canal-tooth="${toothId}"]`);
+                if (!card) return;
+                Object.entries(canals).forEach(([canal, vals]) => {
+                    const wlInput = card.querySelector(`[data-canal="${canal}"][data-field="wl"]`);
+                    if (wlInput && vals.wl) wlInput.value = vals.wl;
+                    if (!vals.file) return;
+                    const fileSelect = card.querySelector(`select[data-canal="${canal}"][data-field="file"]`);
+                    const fileCustom = card.querySelector(`input[data-canal="${canal}"][data-field="file-custom"]`);
+                    const matchingOption = Array.from(fileSelect.options).find(o => o.value === vals.file);
+                    if (matchingOption) {
+                        fileSelect.value = vals.file;
+                    } else {
+                        // Saved value isn't one of the standard sizes — show it in the custom box instead.
+                        fileSelect.classList.add('hidden');
+                        fileCustom.classList.remove('hidden');
+                        fileCustom.value = vals.file;
+                    }
+                });
+            });
+        }
+
+        // Runs whenever the Procedure dropdown changes — shows/hides and populates whichever
+        // section is relevant (canal details for Endo phases, materials for Filling).
+        window.onProcedureChange = function() {
+            window.renderCanalDetails();
+            window.renderFillingMaterialsFields();
+        };
+
+        function populateMaterialSelect(selectId, options, preferredValue, allowNone) {
+            const select = document.getElementById(selectId);
+            const noneOption = allowNone ? `<option value="">None</option>` : '';
+            select.innerHTML = noneOption + options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+            if (preferredValue !== undefined && (preferredValue === '' || options.includes(preferredValue))) select.value = preferredValue;
+            else select.value = options[0] || '';
+        }
+
+        window.renderFillingMaterialsFields = function() {
+            const procedure = document.getElementById('new-entry-procedure').value;
+            const section = document.getElementById('filling-materials-section');
+            if (procedure !== 'Filling') {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+            populateMaterialSelect('filling-bond-select', window.fillingMaterials.bond, undefined, true);
+            populateMaterialSelect('filling-composite-select', window.fillingMaterials.composite, undefined, false);
+            populateMaterialSelect('filling-flowable-select', window.fillingMaterials.flowable, undefined, true);
+        };
+
+        function populateFillingMaterialsFields(saved) {
+            if (!saved) return;
+            populateMaterialSelect('filling-bond-select', window.fillingMaterials.bond, saved.bond, true);
+            populateMaterialSelect('filling-composite-select', window.fillingMaterials.composite, saved.composite, false);
+            populateMaterialSelect('filling-flowable-select', window.fillingMaterials.flowable, saved.flowable, true);
+        }
+
+        function collectFillingMaterials() {
+            return {
+                bond: document.getElementById('filling-bond-select').value,
+                composite: document.getElementById('filling-composite-select').value,
+                flowable: document.getElementById('filling-flowable-select').value
+            };
+        }
+
+        // Brief code for Filling visits, e.g. "Premio / Toko / GC Flo" — just the three chosen
+        // materials, no labels, matching the same brevity as the canal codes.
+        function buildFillingCode(materials) {
+            const parts = [materials.bond, materials.composite, materials.flowable].filter(Boolean);
+            return parts.length ? parts.join(' / ') : '';
+        }
+
+        // Materials management modal — edits a working draft, only writing to Firestore on Save.
+        window.materialsDraft = null;
+
+        window.openMaterialsModal = function() {
+            window.materialsDraft = JSON.parse(JSON.stringify(window.fillingMaterials));
+            renderMaterialsModalLists();
+            document.getElementById('materials-modal').classList.remove('hidden');
+            document.getElementById('materials-modal').classList.add('flex');
+        };
+
+        window.closeMaterialsModal = function() {
+            document.getElementById('materials-modal').classList.add('hidden');
+            document.getElementById('materials-modal').classList.remove('flex');
+        };
+
+        function renderMaterialsModalLists() {
+            ['bond', 'composite', 'flowable'].forEach(category => {
+                const list = window.materialsDraft[category] || [];
+                const container = document.getElementById(`materials-${category}-list`);
+                container.innerHTML = list.map((item, i) => `
+                    <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5">
+                        <span class="flex-grow text-sm font-bold text-slate-700 truncate">${escapeHtml(item)}</span>
+                        ${i > 0 ? `<button type="button" onclick="window.moveMaterial('${category}', ${i}, -1)" class="text-slate-400 hover:text-clinic text-xs w-6 h-6 flex-shrink-0"><i class="fa-solid fa-arrow-up"></i></button>` : `<span class="w-6 flex-shrink-0"></span>`}
+                        ${i < list.length - 1 ? `<button type="button" onclick="window.moveMaterial('${category}', ${i}, 1)" class="text-slate-400 hover:text-clinic text-xs w-6 h-6 flex-shrink-0"><i class="fa-solid fa-arrow-down"></i></button>` : `<span class="w-6 flex-shrink-0"></span>`}
+                        <button type="button" onclick="window.removeMaterial('${category}', ${i})" class="text-slate-400 hover:text-red-500 text-xs w-6 h-6 flex-shrink-0"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                `).join('') || `<p class="text-xs text-slate-400 font-bold">No materials yet.</p>`;
+            });
+        }
+
+        window.addMaterial = function(category) {
+            const input = document.getElementById(`materials-${category}-new`);
+            const value = input.value.trim();
+            if (!value) return;
+            window.materialsDraft[category] = [...(window.materialsDraft[category] || []), value];
+            input.value = '';
+            renderMaterialsModalLists();
+        };
+
+        window.removeMaterial = function(category, index) {
+            window.materialsDraft[category].splice(index, 1);
+            renderMaterialsModalLists();
+        };
+
+        window.moveMaterial = function(category, index, direction) {
+            const list = window.materialsDraft[category];
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= list.length) return;
+            [list[index], list[newIndex]] = [list[newIndex], list[index]];
+            renderMaterialsModalLists();
+        };
+
+        window.saveMaterials = async function() {
+            if (!db) return;
+            try {
+                const materialsRef = doc(db, 'artifacts', appId, 'public', 'data', 'clinic_state', 'filling_materials');
+                await setDoc(materialsRef, window.materialsDraft, { merge: false });
+                window.closeMaterialsModal();
+                window.showMessage('Saved', 'Filling materials updated.', 'success');
+            } catch (e) {
+                console.error(e);
+                window.showMessage('Save Failed', 'Could not save materials. Please try again.', 'error');
+            }
+        };
+
+        // Formats the canal boxes as a brief code and merges it into the Notes field itself,
+        // so the printed Patient Summary (which only prints Notes) shows it too.
+        // Format: (MB 22 F2 / DB 22 F2 / P 23 F5) — Obturation visits get an "Obt." prefix,
+        // Instrumentation visits get no prefix at all.
+        function buildCanalCode(canalDetails, procedure) {
+            const toothIds = Object.keys(canalDetails);
+            if (toothIds.length === 0) return '';
+            const groups = toothIds.map(toothId => {
+                const canalsText = Object.entries(canalDetails[toothId]).map(([canal, vals]) => {
+                    let part = canal;
+                    if (vals.wl) part += ' ' + vals.wl;
+                    if (vals.file) part += ' ' + vals.file; // file value already includes its own prefix (S1, F2, etc.)
+                    return part;
+                }).join(' / ');
+                const bracket = `(${canalsText})`;
+                return toothIds.length > 1 ? `${toothId} ${bracket}` : bracket;
+            });
+            const combined = groups.join('  ');
+            return procedure === 'Obturation' ? `Obt. ${combined}` : combined;
+        }
+
+        // Any auto-generated code (canal details, filling materials, etc.) is saved as its own
+        // first paragraph, prefixed with an invisible zero-width marker that never shows up when
+        // printed. This lets us reliably strip and rebuild it on every save, regardless of what
+        // the code's actual text looks like, without ever duplicating it.
+        const AUTOCODE_MARKER = '\u200B';
+
+        function mergeGeneratedCode(codeText, freeText) {
+            if (!codeText) return freeText;
+            return AUTOCODE_MARKER + codeText + (freeText ? '\n\n' + freeText : '');
+        }
+
+        function stripCanalBlock(notesText) {
+            if (notesText.startsWith(AUTOCODE_MARKER)) {
+                const withoutMarker = notesText.slice(AUTOCODE_MARKER.length);
+                const parts = withoutMarker.split('\n\n');
+                return parts.slice(1).join('\n\n').trim();
+            }
+            return notesText.trim();
+        }
+
+        // Sets the chart's visual selection directly (used both to clear it for a new entry,
+        // and to pre-select the saved teeth when editing an existing one).
+        function setSelectedTeethVisual(teethArray) {
+            window.selectedTeeth = new Set(teethArray || []);
+            document.querySelectorAll('.tooth-btn').forEach(btn => {
+                const id = btn.getAttribute('data-tooth');
+                if (window.selectedTeeth.has(id)) {
+                    btn.classList.add('bg-clinic', 'border-clinic', 'text-white');
+                    btn.classList.remove('bg-white', 'border-slate-200', 'text-slate-700');
+                } else {
+                    btn.classList.remove('bg-clinic', 'border-clinic', 'text-white');
+                    btn.classList.add('bg-white', 'border-slate-200', 'text-slate-700');
+                }
+            });
+        }
+
+        function resetToothChart() {
+            setSelectedTeethVisual([]);
+        }
+
+
+        window.editingEntryId = null;
+
+        // Resizes/compresses an image client-side before upload (used by the standalone
+        // patient-photo button, not by case entries anymore).
+        function compressImage(file, maxDim = 1600, quality = 0.8) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+                        if (width > height && width > maxDim) { height = Math.round(height * maxDim / width); width = maxDim; }
+                        else if (height > maxDim) { width = Math.round(width * maxDim / height); height = maxDim; }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width; canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Compression failed')), 'image/jpeg', quality);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.openAddCaseEntryForm = function(editEntryId) {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            const existingEntry = editEntryId && p ? (p.caseHistory || []).find(e => e.id === editEntryId) : null;
+            window.editingEntryId = existingEntry ? editEntryId : null;
+
+            document.getElementById('entry-modal-title').textContent = existingEntry ? 'Edit Case Entry' : 'New Case Entry';
+            document.getElementById('entry-modal-patient-name').textContent = p ? p.name + (p.patientId ? ' · ID ' + p.patientId : '') : '';
+            document.getElementById('new-entry-date').value = existingEntry ? existingEntry.date : new Date().toISOString().split('T')[0];
+            document.getElementById('new-entry-notes').value = existingEntry ? stripCanalBlock(existingEntry.notes || '') : '';
+            document.getElementById('new-entry-paid').value = existingEntry && existingEntry.paid ? existingEntry.paid : '';
+            document.getElementById('new-entry-remaining').value = existingEntry && existingEntry.remaining ? existingEntry.remaining : '';
+            document.getElementById('new-entry-procedure').value = existingEntry ? (existingEntry.procedure || '') : '';
+            setSelectedTeethVisual(existingEntry ? existingEntry.teeth : []);
+            document.getElementById('canal-details-list').innerHTML = '';
+            window.renderCanalDetails();
+            if (existingEntry && existingEntry.canalDetails) populateCanalDetails(existingEntry.canalDetails);
+            window.renderFillingMaterialsFields();
+            if (existingEntry && existingEntry.fillingMaterials) populateFillingMaterialsFields(existingEntry.fillingMaterials);
+
+            // Deciduous chart starts collapsed, but auto-expands if this entry already has a
+            // baby-tooth selected, so editing doesn't hide something already chosen.
+            const hasDeciduousSelected = existingEntry && existingEntry.teeth && existingEntry.teeth.some(t => /[A-E]$/.test(t));
+            const deciduousWrapper = document.getElementById('deciduous-chart-wrapper');
+            const deciduousLabel = document.getElementById('deciduous-toggle-label');
+            deciduousWrapper.classList.toggle('hidden', !hasDeciduousSelected);
+            deciduousLabel.innerHTML = hasDeciduousSelected
+                ? 'Hide <i class="fa-solid fa-chevron-up text-[10px]"></i>'
+                : 'Show <i class="fa-solid fa-chevron-down text-[10px]"></i>';
+
+            document.getElementById('add-entry-modal').classList.remove('hidden');
+            document.getElementById('add-entry-modal').classList.add('flex');
+            setTimeout(() => document.getElementById('new-entry-notes').focus(), 50);
+        };
+
+        window.cancelAddCaseEntry = function() {
+            document.getElementById('add-entry-modal').classList.add('hidden');
+            document.getElementById('add-entry-modal').classList.remove('flex');
+        };
+
+        window.saveCaseEntry = async function() {
+            const date = document.getElementById('new-entry-date').value;
+            const rawNotes = document.getElementById('new-entry-notes').value.trim();
+            const paid = parseFloat(document.getElementById('new-entry-paid').value) || 0;
+            const remaining = parseFloat(document.getElementById('new-entry-remaining').value) || 0;
+            const procedure = document.getElementById('new-entry-procedure').value;
+            const quadrantOrder = { UR: 0, UL: 1, LR: 2, LL: 3 };
+            const teeth = Array.from(window.selectedTeeth).sort((a, b) => {
+                const qa = a.slice(0, 2), qb = b.slice(0, 2);
+                if (qa !== qb) return quadrantOrder[qa] - quadrantOrder[qb];
+                return parseInt(a.slice(2), 10) - parseInt(b.slice(2), 10);
+            });
+            const canalDetails = (procedure === 'Instrumentation' || procedure === 'Obturation') ? collectCanalDetails() : {};
+            const fillingMaterials = procedure === 'Filling' ? collectFillingMaterials() : {};
+
+            // Strip any previously auto-generated code from what's typed, then prepend a fresh
+            // one built from the current values — keeps edits from ever duplicating it.
+            const cleanTypedNotes = stripCanalBlock(rawNotes);
+            let generatedCode = '';
+            if (procedure === 'Instrumentation' || procedure === 'Obturation') generatedCode = buildCanalCode(canalDetails, procedure);
+            else if (procedure === 'Filling') generatedCode = buildFillingCode(fillingMaterials);
+            const notes = mergeGeneratedCode(generatedCode, cleanTypedNotes);
+
+            if (!date) {
+                window.showMessage('Missing Date', 'Please select a date for this entry.', 'error');
+                return;
+            }
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p || !db) return;
+
+            const entryId = window.editingEntryId || (Date.now().toString(36) + Math.random().toString(36).slice(2, 7));
+
+            try {
+                let updatedHistory;
+                if (window.editingEntryId) {
+                    // Spreading ...e first preserves any older fields (like photos from before this
+                    // feature was removed) that aren't explicitly touched here.
+                    updatedHistory = (p.caseHistory || []).map(e =>
+                        e.id === window.editingEntryId ? { ...e, date, notes, paid, remaining, teeth, procedure, canalDetails, fillingMaterials } : e
+                    );
+                } else {
+                    updatedHistory = [...(p.caseHistory || []), { id: entryId, date, notes, paid, remaining, teeth, procedure, canalDetails, fillingMaterials }];
+                }
+
+                const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                await setDoc(patientRef, { caseHistory: updatedHistory, updatedAt: serverTimestamp() }, { merge: true });
+                window.editingEntryId = null;
+                window.cancelAddCaseEntry();
+            } catch (e) {
+                console.error(e);
+                window.showMessage('Save Failed', 'Could not save this entry. Please try again.', 'error');
+            }
+        };
+
+        async function deletePhotosForEntry(entry) {
+            if (!entry || !entry.photos || !storage) return;
+            for (const ph of entry.photos) {
+                try { await deleteObject(ref(storage, ph.path)); } catch (e) { console.warn('Photo delete failed:', e); }
+            }
+        }
+
+        window.deleteCaseEntry = function(entryId) {
+            window.showConfirm('Delete Entry', 'Are you sure you want to delete this case entry?', async () => {
+                const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+                if (!p || !db) return;
+                const entryToDelete = (p.caseHistory || []).find(e => e.id === entryId);
+                const updatedHistory = (p.caseHistory || []).filter(e => e.id !== entryId);
+                try {
+                    const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                    await setDoc(patientRef, { caseHistory: updatedHistory, updatedAt: serverTimestamp() }, { merge: true });
+                    await deletePhotosForEntry(entryToDelete);
+                } catch (e) {
+                    console.error(e);
+                    window.showMessage('Delete Failed', 'Could not delete this entry. Please try again.', 'error');
+                }
+            });
+        };
+
+        window.deletePatientPrompt = function() {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p) return;
+            window.showConfirm('Delete Patient', `This will permanently delete ${p.name} and their entire case history. Are you sure?`, async () => {
+                try {
+                    const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                    await deleteDoc(patientRef);
+                    for (const entry of (p.caseHistory || [])) {
+                        await deletePhotosForEntry(entry);
+                    }
+                    for (const ph of (p.generalPhotos || [])) {
+                        try { await deleteObject(ref(storage, ph.path)); } catch (e) { console.warn('Photo delete failed:', e); }
+                    }
+                    window.backToPatientList();
+                } catch (e) {
+                    console.error(e);
+                    window.showMessage('Delete Failed', 'Could not delete this patient. Please try again.', 'error');
+                }
+            });
+        };
+
+
+        window.toggleNameEdit = function() {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            const row = document.getElementById('name-edit-row');
+            const input = document.getElementById('edit-name-input');
+            const isHidden = row.classList.contains('hidden');
+            if (isHidden) {
+                input.value = (p && p.name) ? p.name : '';
+                row.classList.remove('hidden');
+                input.focus();
+            } else {
+                row.classList.add('hidden');
+            }
+        };
+
+        window.savePatientName = async function() {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p || !db) return;
+            const name = document.getElementById('edit-name-input').value.trim();
+            if (!name) {
+                window.showMessage('Missing Name', "Name can't be empty.", 'error');
+                return;
+            }
+
+            const duplicates = window.allPatients.filter(x => x.id !== p.id && (x.name || '').trim().toLowerCase() === name.toLowerCase());
+            if (duplicates.length > 0) {
+                const existingList = duplicates.map(x => `#${x.patientId || '?'}${x.phone ? ' (' + x.phone + ')' : ''}`).join(', ');
+                window.showConfirm(
+                    'Possible Duplicate',
+                    `Another patient named "${name}" already exists: ${existingList}. Rename this patient to "${name}" anyway?`,
+                    () => actuallySavePatientName(p, name)
+                );
+                return;
+            }
+            actuallySavePatientName(p, name);
+        };
+
+        async function actuallySavePatientName(p, name) {
+            try {
+                const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                await setDoc(patientRef, { name, updatedAt: serverTimestamp() }, { merge: true });
+                document.getElementById('name-edit-row').classList.add('hidden');
+                window.showMessage('Saved', 'Patient name updated.', 'success');
+            } catch (e) {
+                console.error(e);
+                window.showMessage('Save Failed', 'Could not save the name. Please try again.', 'error');
+            }
+        }
+
+        window.togglePhoneEdit = function() {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            const row = document.getElementById('phone-edit-row');
+            const input = document.getElementById('edit-phone-input');
+            const isHidden = row.classList.contains('hidden');
+            if (isHidden) {
+                input.value = (p && p.phone) ? p.phone : '';
+                row.classList.remove('hidden');
+                input.focus();
+            } else {
+                row.classList.add('hidden');
+            }
+        };
+
+        window.savePatientPhone = async function() {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p || !db) return;
+            const phone = document.getElementById('edit-phone-input').value.trim();
+            try {
+                const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                await setDoc(patientRef, { phone, updatedAt: serverTimestamp() }, { merge: true });
+                document.getElementById('phone-edit-row').classList.add('hidden');
+                window.showMessage('Saved', 'Phone number updated.', 'success');
+            } catch (e) {
+                console.error(e);
+                window.showMessage('Save Failed', 'Could not save the phone number. Please try again.', 'error');
+            }
+        };
+
+        // Converts a local Iraqi number (e.g. "07701234567") into the international format
+        // WhatsApp's click-to-chat link requires (e.g. "9647701234567"), leaving already-international
+        // numbers untouched.
+
+        function formatIraqiPhoneForWhatsApp(phone) {
+            let digits = (phone || '').replace(/\D/g, '');
+            if (!digits) return null;
+            if (digits.startsWith('00')) digits = digits.slice(2);
+            if (digits.startsWith('0')) digits = '964' + digits.slice(1);
+            if (!digits.startsWith('964')) digits = '964' + digits;
+            return digits;
+        }
+
+        const WHATSAPP_MESSAGES = {
+            'تركيب': "تحية طيبة، معكم عيادة طبيب الأسنان. لقد وصل تركيب الاسنان الخاص بكم. يرجى حجز موعدكم عبر هذا الرابط: [رابط العيادة]",
+            'زراعة': "تحية طيبة، معكم عيادة طبيب الأسنان. موعد الزراعة يوم الأربعاء بعد الساعة ال 8 مساءا. يرجى حجز موعدكم عبر الرابط [رابط العيادة]",
+            'تقويم': "تحية طيبة، معكم عيادة طبيب الأسنان. موعد التقويم الأربعاء بعد الساعة 8 مساءا. يرجى حجز موعدكم عبر الرابط [رابط العيادة]"
+        };
+
+        window.sendWhatsAppReminder = function(type) {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p) return;
+            if (!p.phone || !p.phone.trim()) {
+                window.showMessage('No Phone Number', 'Please add a phone number for this patient first.', 'error');
+                return;
+            }
+            const whatsappNumber = formatIraqiPhoneForWhatsApp(p.phone);
+            const message = WHATSAPP_MESSAGES[type] || WHATSAPP_MESSAGES['تركيب'];
+            const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        };
+
+        // Finds patients needing an Endo follow-up: their most recent Instrumentation/Obturation
+        // entry was 4-30 days ago (the most recent 3 days are excluded — too soon for a "don't
+        // forget" nudge), not already dismissed, oldest visit first, capped at 30.
+        window.openEndoFollowups = function() {
+            const oldCutoff = new Date();
+            oldCutoff.setDate(oldCutoff.getDate() - 30);
+            const oldCutoffIso = oldCutoff.toISOString().split('T')[0];
+
+            const recentCutoff = new Date();
+            recentCutoff.setDate(recentCutoff.getDate() - 3);
+            const recentCutoffIso = recentCutoff.toISOString().split('T')[0];
+
+            const results = [];
+            window.allPatients.forEach(p => {
+                (p.caseHistory || []).forEach(e => {
+                    if ((e.procedure === 'Instrumentation' || e.procedure === 'Obturation') &&
+                        e.date >= oldCutoffIso && e.date <= recentCutoffIso && !e.reminderDismissed) {
+                        results.push({ patient: p, entry: e });
+                    }
+                });
+            });
+            results.sort((a, b) => a.entry.date.localeCompare(b.entry.date)); // oldest first
+            const capped = results.slice(0, 30);
+
+            const container = document.getElementById('endo-followup-list');
+            if (capped.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-400 font-bold py-10">No follow-ups needed right now.</p>`;
+            } else {
+                container.innerHTML = capped.map(r => `
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3 shadow-sm">
+                        <label class="flex items-center gap-2 flex-shrink-0 cursor-pointer" title="Tick once you've messaged them or they've already been in">
+                            <input type="checkbox" onchange="window.dismissEndoReminder('${r.patient.id}', '${r.entry.id}')" class="w-5 h-5 rounded border-2 border-slate-300 text-clinic focus:ring-clinic cursor-pointer">
+                        </label>
+                        <button onclick="window.openPatientDetail('${r.patient.id}')" class="text-left flex-grow min-w-0">
+                            <p class="font-black text-slate-800 text-sm truncate">${escapeHtml(r.patient.name)}</p>
+                            <p class="text-[11px] text-slate-500 font-bold">${r.patient.patientId ? 'ID: ' + escapeHtml(r.patient.patientId) : ''} · ${escapeHtml(r.entry.procedure)} on ${r.entry.date}</p>
+                        </button>
+                        <button onclick="window.sendEndoReminder('${r.patient.id}')" class="bg-green-500 hover:bg-green-600 text-white font-bold px-3 py-2 rounded-lg text-sm flex-shrink-0" title="Send WhatsApp reminder"><i class="fa-brands fa-whatsapp"></i></button>
+                    </div>
+                `).join('');
+            }
+            recordsShowStep('endo-followup-step');
+        };
+
+        window.dismissEndoReminder = async function(patientId, entryId) {
+            const p = window.allPatients.find(x => x.id === patientId);
+            if (!p || !db) return;
+            const updatedHistory = (p.caseHistory || []).map(e => e.id === entryId ? { ...e, reminderDismissed: true } : e);
+            try {
+                const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                await setDoc(patientRef, { caseHistory: updatedHistory, updatedAt: serverTimestamp() }, { merge: true });
+            } catch (e) {
+                console.error(e);
+                window.showMessage('Failed', 'Could not update. Please try again.', 'error');
+            }
+        };
+
+        window.sendEndoReminder = function(patientId) {
+            const p = window.allPatients.find(x => x.id === patientId);
+            if (!p) return;
+            if (!p.phone || !p.phone.trim()) {
+                window.showMessage('No Phone Number', 'Please add a phone number for this patient first.', 'error');
+                return;
+            }
+            const whatsappNumber = formatIraqiPhoneForWhatsApp(p.phone);
+            const message = "تحية طيبة معكم عيادة طبيب الأسنان، هذة رسالة تلقائية لتذكيركم بموعد حشوة الجذر. يمكنكم الحجز الكترونيا عبر الرابط [رابط العيادة]";
+            const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        };
+
+        // Standalone patient photos — not tied to any single case entry, uploaded directly from the patient's page.
+
+        window.handleGeneralPhotoSelect = async function(event) {
+            const files = Array.from(event.target.files || []);
+            event.target.value = '';
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p || !db || !storage || files.length === 0) return;
+
+            try {
+                const uploaded = [];
+                for (let i = 0; i < files.length; i++) {
+                    const blob = await compressImage(files[i]);
+                    const path = `patient_photos/${p.id}/general/${Date.now()}_${i}.jpg`;
+                    const storageRef = ref(storage, path);
+                    await uploadBytes(storageRef, blob);
+                    const url = await getDownloadURL(storageRef);
+                    uploaded.push({ url, path });
+                }
+                const updatedPhotos = [...(p.generalPhotos || []), ...uploaded];
+                const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                await setDoc(patientRef, { generalPhotos: updatedPhotos, updatedAt: serverTimestamp() }, { merge: true });
+            } catch (e) {
+                console.error(e);
+                window.showMessage('Upload Failed', 'Could not upload photo(s). Please try again.', 'error');
+            }
+        };
+
+        window.deleteGeneralPhoto = function(index) {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p) return;
+            window.showConfirm('Delete Photo', 'Remove this photo?', async () => {
+                const photos = [...(p.generalPhotos || [])];
+                const removed = photos.splice(index, 1)[0];
+                try {
+                    const patientRef = doc(db, 'artifacts', appId, 'public', 'data', 'patient_records', p.id);
+                    await setDoc(patientRef, { generalPhotos: photos, updatedAt: serverTimestamp() }, { merge: true });
+                    if (removed && storage) {
+                        try { await deleteObject(ref(storage, removed.path)); } catch (e) { console.warn('Photo delete failed:', e); }
+                    }
+                } catch (e) {
+                    console.error(e);
+                    window.showMessage('Delete Failed', 'Could not delete this photo. Please try again.', 'error');
+                }
+            });
+        };
+
+        // Builds a clean, old-index-card-style history sheet for a patient and opens it
+        // as its own page — fast to scan, and printable if a paper copy is ever needed.
+
+        window.openPatientSummary = function() {
+            const p = window.allPatients.find(x => x.id === window.currentDetailPatientId);
+            if (!p) return;
+
+            const entries = [...(p.caseHistory || [])].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+            let totalPaid = 0;
+            const rows = entries.map(e => {
+                totalPaid += Number(e.paid || 0);
+                const treatment = [e.teeth && e.teeth.length ? 'Teeth: ' + e.teeth.join(', ') : '', e.procedure || ''].filter(Boolean).join(' · ') || '—';
+                return `<tr>
+                    <td>${escapeHtml(e.date || '')}</td>
+                    <td>${escapeHtml(treatment)}</td>
+                    <td>${escapeHtml(e.notes || '')}</td>
+                    <td class="paid">${Number(e.paid || 0).toLocaleString()}</td>
+                    <td class="remaining">${e.remaining > 0 ? Number(e.remaining).toLocaleString() : '—'}</td>
+                </tr>`;
+            }).join('');
+
+            const html = `<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(p.name)} — Patient Summary</title>
+<style>
+  body { font-family: Georgia, 'Times New Roman', serif; background:#f4f1ea; color:#2b2b2b; margin:0; padding:24px; }
+  .card { max-width: 800px; margin: 0 auto; background:#fffdf8; border: 2px solid #3a3226; border-radius: 6px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .clinic-name { text-align:center; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#8a7a5c; margin: 0 0 6px; }
+  h1 { text-align:center; font-size:22px; margin: 0 0 20px; border-bottom: 2px solid #3a3226; padding-bottom:16px; }
+  .info-row { display:flex; justify-content:space-between; font-size:14px; padding: 6px 0; border-bottom: 1px dashed #ccc; }
+  .info-label { font-weight:bold; color:#5c5142; }
+  table { width:100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+  th { text-align:left; border-bottom: 2px solid #3a3226; padding: 8px 6px; font-size: 11px; text-transform:uppercase; letter-spacing:0.5px; color:#5c5142; }
+  td { padding: 10px 6px; border-bottom: 1px solid #ddd; vertical-align:top; }
+  tr:nth-child(even) { background: #f7f3ea; }
+  .paid { color:#1f7a3d; font-weight:bold; white-space:nowrap; }
+  .remaining { color:#b3261e; font-weight:bold; white-space:nowrap; }
+  tfoot td { font-weight:bold; border-top: 2px solid #3a3226; border-bottom:none; padding-top: 12px; }
+  .totals-label { text-align:right; }
+  .print-btn { display:block; margin: 24px auto 0; padding: 10px 28px; background:#3a3226; color:#fff; border:none; border-radius:6px; font-size:14px; cursor:pointer; font-family: inherit; }
+  .print-btn:hover { background:#2b2419; }
+  @media print { .print-btn { display:none; } body { background:#fff; padding:0; } .card { box-shadow:none; border:none; } }
+</style>
+</head>
+<body>
+  <div class="card">
+    <p class="clinic-name">عيادة طبيب الأسنان — نسخة تجريبية</p>
+    <h1>Patient History Sheet</h1>
+    <div class="info-row"><span class="info-label">Name</span><span>${escapeHtml(p.name || '')}</span></div>
+    <div class="info-row"><span class="info-label">Patient ID</span><span>${escapeHtml(p.patientId || '—')}</span></div>
+    <div class="info-row"><span class="info-label">Phone</span><span>${escapeHtml(p.phone || '—')}</span></div>
+    <div class="info-row"><span class="info-label">Total Visits</span><span>${entries.length}</span></div>
+
+    <table>
+      <thead><tr><th>Date</th><th>Treatment</th><th>Notes</th><th>Paid</th><th>Remaining</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="5" style="text-align:center;color:#999;">No case history yet.</td></tr>'}</tbody>
+      ${entries.length ? `<tfoot><tr><td colspan="3" class="totals-label">Total Paid</td><td class="paid">${totalPaid.toLocaleString()}</td><td></td></tr></tfoot>` : ''}
+    </table>
+
+    <button class="print-btn" onclick="window.print()">Print This Sheet</button>
+  </div>
+</body>
+</html>`;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        };
+
+        // Auth listener is already wired up via initRecordsAuth() above — nothing else to init here.
+
+        // Register service worker for installability (Add to Home Screen) and offline shell caching
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
+            });
+        }
+
+        // The button is always visible. If the browser has a real install prompt ready, use it.
+        // Otherwise (iOS Safari, or Android before the browser is ready to offer it) show clear
+        // instructions instead of doing nothing when tapped.
+
+
+        window.syncDarkModeIcon();
+        initRecordsAuth();
+    </script>
+</body>
+</html>
